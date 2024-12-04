@@ -1,0 +1,16 @@
+@font-face {
+    font-family: 'logoFont';
+    src: url('Bobagum.otf') format('truetype');
+}
+@font-face {
+    font-family: 'mainFont';
+    src: url('SUIT-Regular.ttf') format('opentype');
+}
+@font-face {
+    font-family: 'titleFont';
+    src: url('SUIT-Bold.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'captionFont';
+    src: url('SUIT-Light.ttf') format('truetype');
+}

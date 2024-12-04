@@ -1,35 +1,104 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import styled from "styled-components";
+import {useState} from "react";
+import './assets/fonts/font.css'
+import MusicUnit, {Music} from "./components/MusicUnit.tsx";
+import SearchBox from "./components/SearchBox.tsx";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+    const [musicList, setMusicList]: Music = useState([
+        {number: 344332, title: "asdf", singer: "fff", composer: "d"},
+        {number: 344332, title: "asdf", singer: "fff", composer: "d"},
+        {number: 344332, title: "asdf", singer: "fff", composer: "d"},
+        {number: 344332, title: "asdf", singer: "fff", composer: "d"},
+        {number: 344332, title: "asdf", singer: "fff", composer: "d"},
+        {number: 344332, title: "asdf", singer: "fff", composer: "d"},
+    ])
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    return (
+        <Screen>
+            <NavBar>
+                <Title onClick={()=>{
+                    location.reload();
+                }}>PLMA</Title>
+                <Mukem>
+                    <SearchBox/>
+                </Mukem>
+            </NavBar>
+            <Main>
+                {musicList.map((music: Music) => (
+                    <MusicUnit number={music.number} title={music.title} singer={music.singer} composer={music.composer} del={()=>{
+                        console.log(music.number);
+                        if(confirm("이걸 안불러?")) {
+                            alert("노래알못 ㅋ")
+                        }
+                    }}/>
+                ))}
+            </Main>
+            <DiceContainer onClick={()=>{
+                alert("랜덤")
+            }}>랜덤곡</DiceContainer>
+        </Screen>
+    );
+};
 
-export default App
+export const Screen = styled.div`
+    width: 100%;
+    height: 100dvh;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+`
+
+const Main = styled.div`
+    padding: 80px 24px 120px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+`
+
+const NavBar = styled.div`
+    position: fixed;
+    width: 100%;
+    height: 60px;
+    background: #ed7a1f;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+`
+const Title = styled.div`
+    font-size: 36px;
+    font-weight: 100;
+    font-family: "logoFont";
+`
+const Mukem =styled.div`
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+    justify-content: end;
+    @media (max-width: 450px) {
+        width: 100%;
+    }
+`
+
+const DiceContainer = styled.div`
+    position: fixed;
+    bottom: 48px;
+    right: 24px;
+    padding: 16px 8px;
+    background-color: #fff;
+    border: solid 2px #000;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    font-family: titleFont;
+    @media (min-width: 450px) {
+        //display: none;
+    }
+`
+
+export default App;
