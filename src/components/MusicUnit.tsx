@@ -6,7 +6,8 @@ export interface Music {
     singer: string;
     composer: string;
     star?: boolean;
-    del: ()=>void;
+    func?: ()=>void;
+    buttonText?: string;
 }
 
 const MusicUnit = (music: Music) => {
@@ -20,7 +21,11 @@ const MusicUnit = (music: Music) => {
                 <Caption>가수: {music.singer}</Caption>
                 <Caption>작곡가: {music.composer}</Caption>
             </CaptionContainer>
-            <DelateButton onClick={music.del}>삭제</DelateButton>
+            {music.buttonText=="추가"?
+                <AddButton onClick={music.func}>추가</AddButton>:
+                <DelateButton onClick={music.func}>삭제</DelateButton>
+            }
+
         </MusicContainer>
     );
 };
@@ -73,6 +78,14 @@ const DelateButton = styled.div`
     border: red solid 1px;
     border-radius: 4px;
     
+`
+const AddButton = styled.div`
+    padding: 8px;
+    font-size: 16px;
+    color: blue;
+    font-style: initial;
+    border: blue solid 1px;
+    border-radius: 4px;
 `
 
 export default MusicUnit;

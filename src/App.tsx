@@ -5,12 +5,23 @@ import MusicUnit, {Music} from "./components/MusicUnit.tsx";
 import axios from "axios";
 
 const App = () => {
+    const BASE_URL = "http://localhost:8000"
     const [musicList, setMusicList] = useState<Music[]>([])
+    const [searchMusicList, setSearchMusicList] = useState<Music[]>([])
     const [musicName, setMusicName] = useState('')
+    const [isSearching, setIsSearching] = useState(false)
+    const fetchData = async () => {
+        try {
+            const response = await axios.get('http://localhost:8000/db'); // 서버에서 데이터 가져오기
+            setMusicList(response.data.musics); // 가져온 데이터로 상태 업데이트
+        } catch (error) {
+            console.error("API 요청 실패:", error);
+        }
+    };
     const deleteMusic = async (musicId: number) => {
         try {
             // 서버로 삭제 요청 보내기
-            await axios.delete(`http://localhost:8000/db/${musicId}`);
+            await axios.delete(`${BASE_URL}/db/${musicId}`);
 
             // 삭제된 음악을 목록에서 제거
             setMusicList((prevList) => prevList.filter((music) => music.number !== musicId));
@@ -19,20 +30,30 @@ const App = () => {
             alert("머야 왜 안돼.");
         }
     };
+    const searchMusic = async (musicTitle: string) => {
+        try{
+            return (await axios.get(`http://localhost:8000/db/search?a=${musicTitle}`)).data;
+        }catch (error) {
+            console.error("검색 요청 실패:", error);
+            // alert("머야 왜 안돼.");
+            return ;
+        }
+    }
+    const addList = async (music: Music) => {
+        try{
+            const response = await axios.post(`${BASE_URL}/db`, {"number":music.number, "title":music.title, "singer":music.singer, "composer":music.composer});
+            console.log(response)
 
-
+        }catch (e) {
+            console.error("실패", e);
+        }
+    }
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await axios.get('http://localhost:8000/db'); // 서버에서 데이터 가져오기
-                setMusicList(response.data.musics); // 가져온 데이터로 상태 업데이트
-            } catch (error) {
-                console.error("API 요청 실패:", error);
-            }
-        };
-
         fetchData(); // 비동기 함수 호출
     }, []);
+    useEffect(() => {
+        setSearchMusicList([])
+    }, [isSearching]);
 
     return (
         <Screen>
@@ -41,34 +62,71 @@ const App = () => {
                     location.reload();
                 }}>PLMA</Title>
                 <Mukem>
-                    <SearchContainer placeholder={"노래제목 검색"}
+                    <SearchContainer placeholder={"노래 제목 검색"}
                                      onChange={(e) => {
                                          setMusicName(e.target.value)
                                          // console.log(musicName)
                                      }}
                                      onKeyDown={(e) => {
                                          if (e.key === 'Enter') {
-                                             console.log("검색된 제목:", musicName);
-                                             // 검색 로직 추가
-                                             alert(`"${musicName}"로 검색합니다.`);
+                                             if(musicName.length > 0){
+                                                 console.log("검색된 제목:", musicName);
+                                                 // 검색 로직 추가
+                                                 searchMusic(musicName).then(value => {
+                                                     console.log(value.searchRes)
+                                                     if(value.searchRes[0] != "검색 결과를 찾을 수 없습니다."){
+                                                         const res = value.searchRes.map((item: Music[]) => ({
+                                                             number: item[0],
+                                                             title: item[1],
+                                                             singer: item[2],
+                                                             composer: item[3],
+                                                         }));
+                                                         setSearchMusicList(res)
+                                                     }else{
+                                                         alert("결과가 엄서요")
+                                                     }
+                                                 });
+                                                 setIsSearching(true)
+                                             }
                                          }
                                      }}/>
                 </Mukem>
             </NavBar>
             <Main>
+                {searchMusicList.map((music:Music) => (
+                    <MusicUnit number={music.number}
+                               title={music.title}
+                               singer={music.singer}
+                               composer={music.composer}
+                               func={()=>{
+                                   addList(music)
+                                   if(confirm(music.title+" 이거 추가할거임?")){
+                                       setSearchMusicList([])
+                                       setIsSearching(false)
+                                       fetchData()
+                                   }
+                    }}
+                               buttonText={"추가"}
+                    />))}
                 {musicList.map((music: Music) => (
-                    <MusicUnit number={music.number} title={music.title} singer={music.singer} composer={music.composer} del={()=>{
-                        console.log(music.number);
-                        if(confirm(music.title+" 이걸 안불러?")) {
-                            alert("지울게 ㅋㅋ")
-                            deleteMusic(music.number)
-                        }
-                    }}/>
-                ))}
+                    <MusicUnit number={music.number}
+                               title={music.title}
+                               singer={music.singer}
+                               composer={music.composer}
+                               func={()=>{
+                                   console.log(music.number);
+                                   if(confirm(music.title+" 이걸 안불러?")) {
+                                       deleteMusic(music.number)
+                                   }}}
+                               buttonText={"삭제"}
+                    />))}
             </Main>
-            <DiceContainer onClick={()=>{
-                // serverGet(1,3)
-            }}>랜덤곡</DiceContainer>
+
+            {isSearching?<DiceContainer onClick={()=>{setIsSearching(false)}}>취소</DiceContainer>:
+                <DiceContainer onClick={()=>{
+                    console.log("될것같지 ㅋ")
+                    alert("그냥 알아서 부르시고 ㅋ")
+                }}>랜덤곡</DiceContainer>}
         </Screen>
     );
 };
@@ -80,14 +138,12 @@ export const Screen = styled.div`
     justify-content: center;
     align-items: center;
 `
-
 const Main = styled.div`
     padding: 80px 24px 120px 24px;
     display: flex;
     flex-direction: column;
     gap: 16px;
 `
-
 const NavBar = styled.div`
     position: fixed;
     width: 100%;
@@ -104,7 +160,7 @@ const Title = styled.div`
     font-weight: 100;
     font-family: "logoFont";
 `
-export const Mukem =styled.div`
+export const Mukem = styled.div`
     display: flex;
     flex-direction: row;
     gap: 6px;
@@ -114,7 +170,6 @@ export const Mukem =styled.div`
         width: 100%;
     }
 `
-
 export const DiceContainer = styled.div`
     position: fixed;
     bottom: 48px;
